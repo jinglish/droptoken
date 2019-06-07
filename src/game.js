@@ -6,13 +6,13 @@ const ACTIVE_STATE = 'IN_PROGRESS';
 const DONE_STATE  = 'DONE';
 
 class Game {
-    constructor (gameEntity) {
-        if (!arguments.length) {
-            this.board = this.getEmptyBoard();
+    constructor (gameEntity, players, columns, rows) {
+        if (!gameEntity) {
+            this._id = uuidv4();
+            this.board = this.getEmptyBoard(columns, rows);
             this.moves = [];
             this.state = ACTIVE_STATE;
-            // TODO: fix this
-            this.players = [PLAYER_1, PLAYER_2];
+            this.players = players;
             this.player = players[0];
             this.winner = null;
         } else {
@@ -26,6 +26,18 @@ class Game {
     }
 
     toJson () {
+        return {
+            _id: this._id,
+            board: this.board,
+            moves: this.moves,
+            state: this.state,
+            players: this.players,
+            player: this.player,
+            winner: this.winner
+        };
+    }
+
+    toGameStateJson () {
         if (this.winner) {
             return {
                 players: this.players,
@@ -41,11 +53,35 @@ class Game {
     }
 
     getEmptyBoard (rows = DEFAULT_ROWS, columns = DEFAULT_COLUMNS) {
-        return new Array();
+        let board = new Array(columns);
+        for (let i = 0; i < columns; i++) {
+            board[i] = new Array(rows);
+            for (let j = 0; j < rows; j++) {
+                board[i][j] = null;
+            }
+        }
+
+        return(board);
     }
 
     playMove (column) {
-        
+        if (this.board[column][DEFAULT_ROWS - 1] === null) {
+            this.board[column][DEFAULT_ROWS - 1] = this.player;
+        } else if (this.board[column][DEFAULT_ROWS - 2] === null) {
+            this.board[column][DEFAULT_ROWS - 2] = this.player;
+        } else if (this.board[column][DEFAULT_ROWS - 3] === null) {
+            this.board[column][DEFAULT_ROWS - 1] = this.player;
+        } else {
+            this.board[column][DEFAULT_ROWS - 4] = this.player;
+        }
+    }
+
+    columnIsFull (column) {
+        if (!this.board[column].includes(null)) {
+            return true;
+        }
+
+        return false;
     }
 
     playerHasWon (player) {
@@ -56,7 +92,6 @@ class Game {
                     && (this.board[i][COLUMN_START + 1] === player)
                     && (this.board[i][COLUMN_START + 2] === player)
                     && (this.board[i][COLUMN_START + 3] === player)) {
-                this.setWinnerAndDoneState();
                 return true;
             }
         }
@@ -67,8 +102,7 @@ class Game {
             if ((this.board[ROW_START][i] === player)
                     && (this.board[ROW_START + 1][i] === player)
                     && (this.board[ROW_START + 2][i] === player)
-                    && (this.board[ROW_START + 3][i] === player))) {
-                this.setWinnerAndDoneState();
+                    && (this.board[ROW_START + 3][i] === player)) {
                 return true;
             }
         }
@@ -78,21 +112,20 @@ class Game {
                 && (this.board[ROW_START + 1][COLUMN_START + 1] === player)
                 && (this.board[ROW_START + 2][COLUMN_START + 2] === player)
                 && (this.board[ROW_START + 3][COLUMN_START + 3] === player)) {
-            this.setWinnerAndDoneState();
             return true;
         }
-        /* if ((this.board[ROW_START][COLUMN_START] === player)
-            && (this.board[ROW_START + 1][COLUMN_START + 1] === player)
-            && (this.board[ROW_START + 2][COLUMN_START + 2] === player)
-            && (this.board[ROW_START + 3][COLUMN_START + 3] === player)) {
+        if ((this.board[3][COLUMN_START] === player)
+            && (this.board[2][COLUMN_START + 1] === player)
+            && (this.board[1][COLUMN_START + 2] === player)
+            && (this.board[0][COLUMN_START + 3] === player)) {
             return true;
-        }*/
+        }
     
         return false;
     }
 
-    setWinnerAndDoneState () {
-        this.winner = this.player;
+    setWinnerAndDoneState (winner) {
+        this.winner = winner;
         this.player = null;
         this.state = DONE_STATE;
     }
