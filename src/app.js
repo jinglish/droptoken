@@ -13,7 +13,15 @@ const PLAYER_NOT_IN_GAME_MESSAGE = 'That player is not a participant in this gam
 
 // Returns all active games
 app.get('/drop_token', (request, response) => {
-    // Get and return all games
+    database.find({state: 'IN_PROGRESS'}, (error, activeGames) => {
+        if (error) {
+            return response.status(500).send(error.message);
+        }
+        const activeGameIds = activeGames.map((game) => game._id);
+        return response.status(200).send({
+            games: activeGameIds
+        });
+    });
 });
 
 // Creates a new game
