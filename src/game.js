@@ -74,6 +74,18 @@ class Game {
         } else {
             this.board[column][DEFAULT_ROWS - 4] = this.player;
         }
+
+        // console.log('players: ' + this.players);
+        // console.log(this.players.indexOf(this.player));
+        if (this.players.indexOf(this.player) === 0) {
+            this.player = this.players[1];
+            // console.log('swap 0 to 1');
+        } else {
+            this.player = this.players[0];
+            // console.log('swap 1 to 0');
+        }
+
+        // console.log('player is ' + this.player);
     }
 
     columnIsFull (column) {
